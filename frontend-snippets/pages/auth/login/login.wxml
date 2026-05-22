@@ -1,0 +1,79 @@
+<!-- 登录页 P01_login — Vant Weapp + design tokens 重构版
+     视觉对齐 doc/mockups/figure/01_login_v1.png：
+     顶部 40% 留白 → 中央品牌大字 + 副标题 → 底部全宽绿色微信登录按钮 + 协议提示 -->
+<view class="login-page">
+
+  <!-- 上部留白区（mockup 顶部 40%） -->
+  <view class="login-spacer-top"></view>
+
+  <!-- 中央品牌区 -->
+  <view class="login-hero">
+    <view class="login-title">校园二手</view>
+    <view class="login-subtitle">校园里的闲置交易，靠谱又方便</view>
+  </view>
+
+  <!-- 中部弹性留白 -->
+  <view class="login-spacer-flex"></view>
+
+  <!-- 底部操作区 -->
+  <view class="login-actions">
+
+    <!-- 未登录态：微信一键登录入口 -->
+    <block wx:if="{{!user}}">
+      <van-button
+        type="primary"
+        block
+        round
+        icon="wechat"
+        loading="{{loading}}"
+        loading-text="登录中..."
+        custom-class="login-btn"
+        bind:click="onWxLogin"
+      >
+        微信一键登录
+      </van-button>
+
+      <view class="login-privacy">
+        <text>登录即同意</text>
+        <text class="login-privacy-link">《用户协议》</text>
+        <text>与</text>
+        <text class="login-privacy-link">《隐私政策》</text>
+      </view>
+
+      <view class="login-browse" bindtap="onBrowseOnly">仅浏览，稍后登录</view>
+    </block>
+
+    <!-- 已登录态：身份绑定 / 退出登录 -->
+    <block wx:else>
+      <view class="login-welcome">
+        <text>欢迎回来，</text>
+        <text class="login-welcome-name">{{ user.nickname }}</text>
+      </view>
+
+      <view wx:if="{{needBindCampus}}" class="login-warn">
+        您尚未完成校园身份绑定，部分功能将无法使用
+      </view>
+
+      <van-button
+        type="primary"
+        block
+        round
+        custom-class="login-btn"
+        bind:click="onBindPassword"
+      >
+        {{ needBindCampus ? '立即绑定校园身份' : '修改登录密码' }}
+      </van-button>
+
+      <van-button
+        plain
+        block
+        round
+        custom-class="login-btn login-btn-secondary"
+        bind:click="onLogout"
+      >
+        退出登录
+      </van-button>
+    </block>
+
+  </view>
+</view>

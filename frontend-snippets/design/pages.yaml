@@ -1,0 +1,982 @@
+# 校园二手 — 28 页面规约（信息层级 + UX copy + ChatGPT prompt）
+#
+# 用途：
+#   1) 给 ChatGPT GPT-Image 生成 mockup PNG 的 prompt 来源
+#   2) Claude Code 实现页面时的 UX copy / 信息层级依据
+#   3) 每页 acceptance criteria 的参考
+#
+# 字段说明：
+#   id              页面唯一编号 P<NN>_<name>
+#   title           中文页面名（导航栏标题）
+#   path            微信小程序 page 路径
+#   tier            V1 既有 / V2 新增
+#   vant_components 用到的 Vant Weapp 组件
+#   copy            关键 UX 文案（中文，按 design:ux-copy 原则编写）
+#   layout          页面分区描述（top/main/bottom）
+#   states          需要覆盖的页面状态
+#   prompt          ChatGPT GPT-Image 生成 mockup 的英文 prompt
+
+meta:
+  version: "1.0.1"
+  updated: "2026-05-14"
+  total_pages: 28
+
+# ============================================================
+# Vant Weapp 组件使用注意（subagent 派发时必读，避免误注册）
+# ============================================================
+# ✅ Vant Weapp 实际拥有的组件参见 frontend/app.json 的 usingComponents
+#
+# ❌ 不要用以下「看似存在但实际不存在」的组件：
+#   - van-step（单数）— 不存在；van-steps 是数据驱动，传 steps 数组属性
+#       <van-steps steps="{{ stepsData }}" active="{{ active }}" />
+#   - van-badge — 不存在；用其他组件的 info 属性挂角标
+#       <van-icon name="bell" info="3" />
+#       <van-tabbar-item info="5" icon="..." />
+#
+# 复合组件父子关系（父组件通过 slot 接子组件，但子组件需独立注册）：
+#   - van-tabs + van-tab（OK，都要注册）
+#   - van-tabbar + van-tabbar-item（OK，都要注册）
+#   - van-cell-group + van-cell（OK，都要注册）
+#   - van-radio-group + van-radio（OK，都要注册）
+#   - van-checkbox-group + van-checkbox（OK，都要注册）
+#   - van-goods-action + van-goods-action-button / van-goods-action-icon（OK）
+#
+# 派发新页面 subagent 时必须告诉它：
+#   1) 写 wxml 前先 grep app.json 中 usingComponents 确认组件存在
+#   2) 看 Vant Weapp 官网（https://vant.pro/vant-weapp/）查标签用法
+# ============================================================
+  global_style: |
+    A WeChat Mini Program **screenshot** of an iOS app called "校园二手"
+    (campus second-hand trading), shown inside an iPhone 15 Pro frame.
+
+    Design language: light theme, white card on #f4f5f7 page background.
+    Primary green #1aad19, accent red #ee0a24 for price, gold #f0a020 for coins.
+    Rounded corners 12-24px, soft shadows.
+    Chinese typography, system PingFang SC.
+
+    The image MUST look like a real production app screenshot,
+    NOT illustration, NOT mockup wireframe, NOT concept art.
+    Status bar: iOS 9:41, full signal, full battery.
+    Render at 1024 x 1536 (mobile portrait).
+
+# ============================================================
+# 认证（2 页）
+# ============================================================
+
+- id: P01_login
+  title: 登录
+  path: pages/auth/login
+  tier: V1
+  vant_components: [van-button]
+  copy:
+    hero_title: 校园二手
+    hero_subtitle: 校园里的闲置交易，靠谱又方便
+    wx_login_btn: 微信一键登录
+    privacy_hint: 登录即同意《用户协议》与《隐私政策》
+  layout:
+    top: 顶部品牌区，logo + slogan
+    main: 大块留白
+    bottom: 居中绿色微信登录按钮 + 协议提示小字
+  states: [normal, loading]
+  prompt: |
+    Login screen.
+    Top 40% of screen: centered logo "校园二手" in big bold green #1aad19,
+    subtitle "校园里的闲置交易，靠谱又方便" in gray.
+    Below: lots of whitespace.
+    Bottom 30%: full-width green button "微信一键登录" with WeChat icon,
+    rounded corners 16px.
+    Below the button: small gray text "登录即同意《用户协议》与《隐私政策》"
+    with the two doc names in green underlined link style.
+
+- id: P02_password
+  title: 修改密码
+  path: pages/auth/password
+  tier: V1
+  vant_components: [van-cell-group, van-field, van-button]
+  copy:
+    nav_title: 修改密码
+    old_label: 当前密码
+    new_label: 新密码
+    confirm_label: 确认新密码
+    submit: 保存
+    rule_hint: 至少 8 位，含字母和数字
+    success_toast: 密码已更新
+  layout:
+    top: 导航栏
+    main: 三个 van-field（当前密码 / 新密码 / 确认新密码） + 规则提示
+    bottom: 保存按钮（吸底）
+  states: [normal, validating, error]
+  prompt: |
+    Password change screen.
+    Standard iOS navigation bar with back chevron and centered title "修改密码".
+    Body: a white card with 3 form rows, each with a label on the left
+    ("当前密码", "新密码", "确认新密码") and password input field with dot mask on right.
+    Below the form: small gray text "至少 8 位，含字母和数字".
+    Bottom fixed: full-width green button "保存".
+
+# ============================================================
+# 首页 + 分类（2 页）
+# ============================================================
+
+- id: P03_index
+  title: 首页
+  path: pages/index
+  tier: V1
+  vant_components: [van-search, van-tabs, van-tab, van-tabbar, van-tabbar-item, van-icon]
+  copy:
+    nav_title: 校园二手
+    search_placeholder: 搜索想要的商品
+    sort_综合: 综合
+    sort_最新: 最新
+    sort_价格: 价格
+    empty: 暂无商品
+    refresh: 下拉刷新
+  layout:
+    top: 搜索栏（吸顶）+ 筛选漏斗 icon
+    上中: 横向滚动分类 chips（数码 / 图书 / 服饰 / 生活 / 票务）
+    中: 排序 tabs（综合 / 最新 / 价格）
+    main: 两列瀑布流商品卡片
+    bottom: TabBar（首页 / 分类 / 发布 / 消息 / 我的）
+  states: [loading, empty, error, normal, pulling_refresh]
+  prompt: |
+    Homepage of the campus marketplace.
+    Top: search bar with placeholder "搜索想要的商品", a filter funnel icon on right.
+    Below search: horizontal scrolling category chips
+    (数码 / 图书 / 服饰 / 生活 / 票务), the active one has green underline.
+    Below chips: sort tabs (综合 | 最新 | 价格), 综合 is active with green text + underline.
+    Main area: 2-column waterfall product grid, 6 visible cards.
+    Each card: square product image on top with subtle shadow,
+    title 2 lines max (e.g. "九成新 Kindle Paperwhite 4 32G"),
+    price "¥240" in red bold large, below: tiny seller avatar + name + "西区 3 栋".
+    Bottom tab bar: 首页(active green icon+text) | 分类 | 发布(center floating green circle with plus) | 消息 | 我的.
+
+- id: P04_category_list
+  title: 分类
+  path: pages/category/list
+  tier: V1
+  vant_components: [van-search, van-cell, van-icon]
+  copy:
+    nav_title: 分类
+    search_placeholder: 搜索分类或商品
+  layout:
+    top: 搜索栏
+    main: 左侧一级分类垂直列表 + 右侧二级分类网格
+    bottom: TabBar
+  states: [normal, loading]
+  prompt: |
+    Category browse screen.
+    Top: search bar "搜索分类或商品".
+    Body split into two columns:
+    Left 30%: vertical list of 5-6 top categories (数码电子 / 图书教材 / 服饰鞋包 / 生活用品 / 票务卡券 / 其他).
+    The active category (数码电子) has light green background and bold text.
+    Right 70%: grid of subcategory icons (3 columns x 4 rows), each tile has
+    a colored emoji icon and label below (手机 / 电脑 / 平板 / 相机 / 耳机 / 音响 / 配件 / 其他).
+    Bottom tab bar (same as homepage).
+
+# ============================================================
+# 商品流程（3 页）
+# ============================================================
+
+- id: P05_goods_detail
+  title: 商品详情
+  path: pages/goods/detail
+  tier: V1
+  vant_components: [van-icon, van-tag, van-goods-action, van-goods-action-icon, van-goods-action-button]
+  copy:
+    favorite: 收藏
+    chat: 聊一聊
+    offer: 出价
+    buy_now: 立即购买
+    report: 举报
+    seller_label: 卖家
+    follow_seller: 关注
+    verified_badge: 实物认证
+    condition_label: 成色
+    location_label: 自提
+  layout:
+    top: 图片轮播（全宽）
+    上中: 价格 + 标题 + 标签 + 实物认证徽章
+    中: 卖家卡片（头像 / 名 / 学院 / 关注按钮）
+    main: 描述 / 成色 / 自提地点 / 相似商品
+    bottom: 操作栏（收藏 / 聊一聊 | 出价 / 立即购买）
+  states: [normal, sold_out, off_shelf]
+  prompt: |
+    Product detail page.
+    Top: full-width image carousel (with 1/5 dots indicator at bottom-right of image).
+    Below image: large red price "¥240" left, gray original price "¥899" with strikethrough.
+    Title "九成新 Kindle Paperwhite 4 32G 无划痕" 2 lines.
+    Inline green badge "实物认证" with verified-check icon, gray tag "9 成新".
+    Seller card: avatar + name "李同学" + small "计算机学院 · 大三" + green outline "关注" button on right.
+    Description section title "商品描述", then 4 lines of plain text.
+    Meta rows: 成色 9 成新 / 自提 西区 3 栋 / 发布 2 天前.
+    Bottom fixed action bar:
+    Left icons (gray): 收藏 (star) + 聊一聊 (chat bubble) + 举报 (warning).
+    Right buttons: green outline "出价" + filled red "立即购买".
+
+- id: P06_goods_publish
+  title: 发布商品
+  path: pages/goods/publish
+  tier: V1
+  vant_components: [van-uploader, van-cell-group, van-field, van-button, van-tag, van-switch]
+  copy:
+    nav_title: 发布商品
+    upload_hint: 最多 9 张，建议横版实拍
+    title_label: 标题
+    title_placeholder: 一句话概括（建议 15-30 字）
+    desc_label: 详情
+    desc_placeholder: 介绍商品的成色、购买时间、瑕疵
+    price_label: 价格
+    price_placeholder: 期望成交价
+    category_label: 分类
+    condition_label: 成色
+    pickup_label: 自提地点
+    pledge_label: 担保质押
+    pledge_hint: 上架时质押 50 校园币，争议责任在你时会扣
+    verify_label: 实物认证
+    verify_hint: 上传带手写日期的实物照片，可获认证徽章
+    ai_title_btn: AI 优化标题
+    ai_desc_btn: AI 生成描述
+    save_draft: 保存草稿
+    publish: 立即发布
+  layout:
+    top: 导航栏 + 9 宫格图片上传
+    main: 标题 / 描述 / 价格 / 分类 / 成色 / 自提 / 担保开关 / 实物认证上传
+    bottom: 底部固定栏（保存草稿 + AI 标题 + AI 描述 + 立即发布）
+  states: [draft, validating, submitting, success]
+  prompt: |
+    Publish product screen.
+    Top nav: back arrow + "发布商品".
+    Below nav: 9-grid photo uploader, first cell is dashed border with camera icon and "添加图片"
+    text, 3 cells already filled with sample product photos.
+    Below uploader: gray hint "最多 9 张，建议横版实拍".
+    Form rows (van-cell-group with cards):
+    - 标题 [一句话概括（建议 15-30 字）]   (with small green ✨ "AI" button on right)
+    - 详情 [multiline textarea]              (with small green ✨ "AI" button on right)
+    - 价格 [¥ 期望成交价 _____]
+    - 分类 [选择分类>]
+    - 成色 [9 成新>]
+    - 自提 [西区 3 栋宿舍楼下>]
+    Toggle rows:
+    - 担保质押 [50 CC]     [green switch ON]
+      Below: gray small hint "上架时质押 50 校园币，争议责任在你时会扣"
+    - 实物认证 [上传认证照>]
+    Bottom fixed bar: ghost button "保存草稿" + filled green button "立即发布".
+
+- id: P07_goods_manage
+  title: 我的商品
+  path: pages/goods/manage
+  tier: V1
+  vant_components: [van-tabs, van-tab, van-card, van-tag, van-button]
+  copy:
+    nav_title: 我的商品
+    tab_在售: 在售
+    tab_已售: 已售
+    tab_下架: 下架
+    tab_草稿: 草稿
+    edit: 编辑
+    take_down: 下架
+    relist: 重新上架
+    empty_在售: 还没有在售商品，去发布一个吧
+  layout:
+    top: 导航栏 + 4 段式 tabs（在售 / 已售 / 下架 / 草稿）
+    main: 商品列表，每条横向卡片
+    bottom: TabBar 隐藏（栈页）
+  states: [normal, empty, loading]
+  prompt: |
+    My products screen.
+    Top nav: back arrow + "我的商品".
+    Below nav: 4 horizontal tabs "在售 (12) | 已售 (28) | 下架 (3) | 草稿 (1)",
+    在售 active with green underline.
+    Body: list of 4 horizontal product cards.
+    Each card: square thumbnail on left (160rpx), middle: title 2 lines + 价格 ¥240 + 浏览 32 · 收藏 5,
+    right: vertical small buttons "编辑" and outlined "下架".
+
+# ============================================================
+# 订单 + 评价（4 页）
+# ============================================================
+
+- id: P08_order_list
+  title: 订单列表
+  path: pages/order/list
+  tier: V1
+  vant_components: [van-tabs, van-tab, van-card, van-tag, van-button, van-empty]
+  copy:
+    nav_title: 我的订单
+    tab_全部: 全部
+    tab_待付款: 待付款
+    tab_待发货: 待发货
+    tab_待收货: 待收货
+    tab_待评价: 待评价
+    pay: 立即付款
+    confirm_receive: 确认收货
+    review: 去评价
+    contact_seller: 联系卖家
+    empty_msg: 这里还是空的
+  layout:
+    top: 导航栏 + 5 段式 tabs（全部 / 待付款 / 待发货 / 待收货 / 待评价）
+    main: 订单卡片列表，每条头部「卖家名 + 状态标签」、中部「商品摘要」、底部「价格 + 操作」
+    bottom: TabBar
+  states: [normal, empty, loading]
+  prompt: |
+    Orders list screen.
+    Top nav: "我的订单".
+    Tabs: 全部 | 待付款 | 待发货 | 待收货 | 待评价, 全部 active.
+    List of 3 order cards.
+    Each card structure:
+    - Header row: small avatar + "李同学" left, orange tag "待付款" right.
+    - Middle: product thumbnail (small square) + title 1 line + 数量 x1 / 共 ¥240.
+    - Footer: ghost button "联系卖家" + filled green "立即付款" right-aligned.
+    Status colors vary: 待付款=orange, 待发货=blue, 待收货=green, 待评价=gray.
+
+- id: P09_order_create
+  title: 下单确认
+  path: pages/order/create
+  tier: V1
+  vant_components: [van-cell, van-cell-group, van-submit-bar]
+  copy:
+    nav_title: 确认订单
+    seller_label: 卖家
+    item_label: 商品
+    pickup_label: 自提地点
+    note_label: 备注
+    note_placeholder: 给卖家留言（选填）
+    total_label: 合计
+    balance_label: 校园币余额
+    balance_after_label: 支付后剩余
+    submit: 确认支付
+    insufficient_balance: 余额不足，请先充值
+  layout:
+    top: 导航栏
+    main: 卖家 + 商品 + 自提地点 + 备注 + 价格明细
+    余额预览卡片: 当前余额 / 支付金额 / 支付后余额（红/绿色字提示）
+    bottom: 合计 + 确认支付按钮（吸底 van-submit-bar）
+  states: [normal, insufficient, submitting, success]
+  prompt: |
+    Order confirmation screen.
+    Top nav: "确认订单".
+    First card: rows
+    - 卖家 [avatar + "李同学"]
+    - 商品 [thumbnail + "九成新 Kindle Paperwhite 4" + "¥240"]
+    - 自提 [西区 3 栋 宿舍楼下 >]
+    - 备注 [给卖家留言（选填）]
+    Second card "校园币支付预览" with gold coin icon header:
+    - 当前余额 ¥1000 CC
+    - 本单扣减 -¥240 CC
+    - 支付后剩余 ¥760 CC (in green if enough, red if not)
+    Bottom fixed submit bar: left "合计 ¥240 CC" red bold + right green button "确认支付".
+
+- id: P10_order_detail
+  title: 订单详情
+  path: pages/order/detail
+  tier: V1
+  vant_components: [van-steps, van-cell, van-cell-group, van-button]
+  copy:
+    nav_title: 订单详情
+    status_pending: 待付款
+    status_confirmed: 待发货
+    status_completed: 已完成
+    status_disputed: 争议中
+    contact_seller: 联系卖家
+    confirm_receive: 确认收货
+    raise_dispute: 申请售后
+    review_now: 立即评价
+    cancel_order: 取消订单
+    order_no_label: 订单号
+    created_at_label: 下单时间
+    paid_at_label: 付款时间
+  layout:
+    top: 导航栏 + 状态横条（进度 steps：下单 → 付款 → 发货 → 收货 → 完成）
+    main: 卖家卡片 / 商品卡片 / 物流自提 / 订单号时间戳
+    bottom: 操作按钮组（按状态显示不同按钮，含「申请售后」入口）
+  states: [pending, confirmed, completed, disputed, cancelled]
+  prompt: |
+    Order detail screen, status 待发货.
+    Top nav: "订单详情".
+    Top wide card with horizontal steps progress: 下单(✓) → 付款(✓ active green) → 发货(in progress) → 收货 → 完成.
+    Status label "卖家正在准备发货" + small gray "等待卖家确认".
+    Seller card row: avatar + "李同学" + outline green button "联系卖家".
+    Product card row: thumbnail + title + price ¥240.
+    Info card: 订单号 CT202605130001 (copy icon) / 下单时间 2026-05-13 15:30 / 付款时间 2026-05-13 15:31.
+    Bottom fixed: 2 buttons side by side, gray "申请售后" + filled green "确认收货".
+
+- id: P11_review_submit
+  title: 提交评价
+  path: pages/review/submit
+  tier: V1
+  vant_components: [van-rate, van-field, van-uploader, van-button, van-tag]
+  copy:
+    nav_title: 评价订单
+    overall_label: 总体评分
+    desc_match_label: 描述相符
+    pickup_label: 自提便利
+    comment_placeholder: 说说这次交易的体验（30 字以上奖励 10 校园币）
+    photo_label: 晒图（选填）
+    quick_tags: [描述准确, 沟通顺畅, 守时, 友善, 包装好]
+    submit: 提交评价
+    anonymous: 匿名评价
+  layout:
+    top: 导航栏 + 卖家卡片
+    main: 三档评分 + 文字评价 + 9 图上传 + 快捷标签 + 匿名开关
+    bottom: 提交按钮（吸底）
+  states: [editing, submitting, success]
+  prompt: |
+    Review submission screen.
+    Top nav: "评价订单".
+    Seller card: avatar + "李同学" + product thumbnail + title.
+    Rating block: 3 rows
+    - 总体评分 [5 yellow stars selected]
+    - 描述相符 [5 stars]
+    - 自提便利 [4 stars]
+    Comment textarea: placeholder "说说这次交易的体验（30 字以上奖励 10 校园币）".
+    Below: row of quick tag chips "描述准确 沟通顺畅 守时 友善 包装好", some selected with green fill.
+    9-grid photo uploader.
+    Anonymous switch row: "匿名评价" with green switch.
+    Bottom fixed: green button "提交评价".
+
+# ============================================================
+# 消息（2 页）
+# ============================================================
+
+- id: P12_message_list
+  title: 消息
+  path: pages/message/list
+  tier: V1
+  vant_components: [van-cell, van-cell-group, van-empty]   # 角标用 van-cell 的 value/icon slot 或 van-icon info 属性，不要用 van-badge
+  copy:
+    nav_title: 消息
+    system_msg: 系统消息
+    transaction_msg: 交易通知
+    price_drop: 降价提醒
+    no_msg: 暂无消息
+  layout:
+    top: 导航栏
+    main: 顶部 3 个固定入口（系统 / 交易 / 降价） + 私聊列表
+    bottom: TabBar
+  states: [normal, empty]
+  prompt: |
+    Message center.
+    Top nav "消息".
+    Top: 3 fixed entries in a horizontal row, each with colored icon:
+    - bell icon "系统消息" (red dot 3)
+    - bag icon "交易通知" (red dot 1)
+    - down-arrow icon "降价提醒"
+    Below: divider line.
+    Chat list section title "私聊".
+    List of 4 private chat rows:
+    - avatar + name "李同学" + last message preview "好的，我下午去拿" + time "刚刚" + unread badge "2"
+    - avatar + name "王同学" + "Kindle 还在吗？" + "10 分钟前"
+    - and so on.
+    Bottom tab bar.
+
+- id: P13_message_chat
+  title: 聊天
+  path: pages/message/chat
+  tier: V1
+  vant_components: [van-icon, van-field, van-action-sheet]
+  copy:
+    nav_title_default: 私聊
+    typing: 对方正在输入...
+    input_placeholder: 输入消息...
+    send: 发送
+    quick_actions: [发送出价, 询问到货, 约自提, 申请退款]
+    forbid_warn: 该消息可能含违禁词，请修改后发送
+    forbid_examples: [电话, 微信号, QQ, 转账]
+  layout:
+    top: 导航栏（卖家名 + 在线状态）
+    main: 聊天气泡流（左右气泡 + 商品分享卡片 + 系统提示）
+    bottom: 输入栏（+ 表情 / 文本 / 发送）+ 快捷动作面板
+  states: [normal, typing, sending, blocked_word_warn]
+  prompt: |
+    Chat screen.
+    Top nav: avatar + "李同学" + small green dot "在线" + back icon left, more icon right.
+    Body: WeChat-style chat bubbles.
+    - Left bubble (other): "Kindle 还在吗？" with time "14:32"
+    - Right bubble (me, green bg, white text): "在的，9 成新"
+    - Center card: shared product card with thumbnail + title + price
+    - Left bubble: "好的，我下午去拿"
+    - Center system tip in gray small text: "提示：禁止线下转账，已开启违禁词预警"
+    Bottom input bar: + icon left, text field "输入消息...", emoji icon, send button green.
+    Above input: a row of quick action chips "发送出价 / 询问到货 / 约自提".
+
+# ============================================================
+# 用户（2 页）
+# ============================================================
+
+- id: P14_user_profile
+  title: 我的
+  path: pages/user/profile
+  tier: V1
+  vant_components: [van-cell, van-cell-group, van-icon]
+  copy:
+    coin_balance_label: 校园币
+    recharge: 充值
+    my_publish: 我的发布
+    my_orders: 我的订单
+    my_favorites: 我的收藏
+    my_wants: 我的求购
+    my_reviews: 收到的评价
+    my_credit: 我的信用
+    settings: 设置
+    edit_profile: 编辑资料
+    college_grade: 计算机学院 · 大三
+    verified_tag: 学院已认证
+  layout:
+    top: 头部背景 + 头像 + 昵称 + 学院年级 + 认证徽章
+    上中: 校园币余额胶囊 + [充值] 按钮
+    中: 4 宫格数据（发布 / 在售 / 收藏 / 关注）
+    main: 设置入口列表（订单 / 收藏 / 求购 / 评价 / 信用 / 设置）
+    bottom: TabBar
+  states: [logged_in, not_logged_in]
+  prompt: |
+    My profile screen.
+    Top: gradient green-to-light-green hero area, avatar (size 80px) centered,
+    name "张同学" white bold, below: small "计算机学院 · 大三" with green check badge "学院已认证".
+    Below hero, overlapping: a white card with gold coin icon + "校园币 ¥1000 CC"
+    big bold + right green outline button "充值".
+    Below: 4-column stat grid: 发布 12 / 在售 8 / 收藏 5 / 关注 3.
+    Below: list of cells with right chevron:
+    - 我的订单 (with red badge 2)
+    - 我的收藏
+    - 我的求购
+    - 收到的评价 (with avg rating ★ 4.9)
+    - 我的信用 (with green tag "良好")
+    - 设置
+    Bottom tab bar with "我的" active.
+
+- id: P15_user_edit
+  title: 编辑资料
+  path: pages/user/edit
+  tier: V1
+  vant_components: [van-cell, van-cell-group, van-field, van-uploader, van-button]
+  copy:
+    nav_title: 编辑资料
+    avatar_label: 头像
+    nickname_label: 昵称
+    college_label: 学院
+    grade_label: 年级
+    bio_label: 个人简介
+    bio_placeholder: 介绍一下自己（选填）
+    verify_btn: 学院认证
+    save: 保存
+  layout:
+    top: 导航栏
+    main: 头像 / 昵称 / 学院 / 年级 / 个人简介 / 学院认证入口
+    bottom: 保存按钮（吸底）
+  states: [editing, saving, success]
+  prompt: |
+    Edit profile screen.
+    Top nav "编辑资料".
+    Form card with cells:
+    - 头像 [avatar circle right]
+    - 昵称 [张同学>]
+    - 学院 [计算机学院>]
+    - 年级 [大三>]
+    - 个人简介 [小段灰色 placeholder 文字]
+    Separate card "学院认证":
+    Green outline button "学院认证" + small description "上传校园卡照片，认证后展示徽章".
+    Bottom fixed: green button "保存".
+
+# ============================================================
+# 管理员（V1，3 页）
+# ============================================================
+
+- id: P16_admin_dashboard
+  title: 管理后台
+  path: pages/admin/dashboard
+  tier: V1
+  vant_components: [van-tabs, van-tab, van-cell-group, van-icon]
+  copy:
+    nav_title: 管理后台
+    tab_day: 日
+    tab_week: 周
+    tab_month: 月
+    metric_users: 注册用户
+    metric_goods: 商品总数
+    metric_orders: 订单数
+    metric_coin: 校园币流通量
+    metric_disputes: 争议处理量
+    metric_reports: 举报数
+  layout:
+    top: 导航栏 + 时间维度 tabs（日/周/月）
+    上中: 6 宫格关键指标卡片
+    main: 图表区（用户增长 + 交易额走势 + 类目分布）
+    bottom: TabBar 隐藏
+  states: [normal, loading]
+  prompt: |
+    Admin dashboard.
+    Top nav "管理后台".
+    Tab row "日 | 周 | 月", 日 active.
+    Below: 6 stat cards in 2 rows of 3, each card:
+    icon + label + big number + small green arrow up "+12%".
+    Cards: 注册用户 1247 / 商品总数 893 / 订单数 412 / 校园币流通量 156万 / 争议处理量 8 / 举报数 14.
+    Below: a line chart card "用户增长曲线" with green line.
+    Below: a pie chart card "类目分布".
+
+- id: P17_admin_users
+  title: 用户管理
+  path: pages/admin/users
+  tier: V1
+  vant_components: [van-search, van-tabs, van-tab, van-cell, van-tag, van-button]
+  copy:
+    nav_title: 用户管理
+    search_placeholder: 搜索昵称 / 学号
+    tab_全部: 全部
+    tab_认证: 已认证
+    tab_拉黑: 已拉黑
+    suspend: 封禁
+    unblock: 解封
+  layout:
+    top: 导航栏 + 搜索栏 + tabs
+    main: 用户列表（头像 / 昵称 / 信用分 / 操作）
+    bottom: TabBar 隐藏
+  states: [normal, loading, empty]
+  prompt: |
+    Admin user management.
+    Top nav + search "搜索昵称 / 学号".
+    Tabs: 全部 | 已认证 | 已拉黑.
+    List of user rows:
+    avatar + name + small "计算机学院 · 大三" + tag "良好/警告/封禁".
+    Right side: 信用分 95 + 红色小按钮 "封禁".
+
+- id: P18_admin_goods_audit
+  title: 商品审核
+  path: pages/admin/goods-audit
+  tier: V1
+  vant_components: [van-tabs, van-tab, van-card, van-button, van-empty]
+  copy:
+    nav_title: 商品审核
+    tab_待审: 待审
+    tab_已通过: 已通过
+    tab_已拒绝: 已拒绝
+    approve: 通过
+    reject: 驳回
+    reject_reason_label: 驳回原因
+  layout:
+    top: 导航栏 + 三 tab
+    main: 商品卡片列表 + 通过/驳回按钮
+  states: [normal, empty]
+  prompt: |
+    Admin goods audit.
+    Top nav + tabs "待审 (5) | 已通过 (128) | 已拒绝 (3)".
+    List of product cards, each with image, title, price, seller info,
+    bottom row: 2 buttons side by side, gray "驳回" + green "通过".
+
+# ============================================================
+# V2 新增 — 校园币 + 求购 + 议价 + 争议 + 收藏（10 页）
+# ============================================================
+
+- id: P19_coins_wallet
+  title: 校园币钱包
+  path: pages/coins/wallet
+  tier: V2
+  vant_components: [van-tabs, van-tab, van-cell, van-cell-group, van-button, van-empty, van-icon]
+  copy:
+    nav_title: 我的钱包
+    balance_label: 校园币余额
+    recharge: 充值（模拟）
+    history_tab_全部: 全部
+    history_tab_收入: 收入
+    history_tab_支出: 支出
+    type_register_gift: 注册礼
+    type_order_pay: 下单扣款
+    type_order_receive: 卖出收款
+    type_review_reward: 评价奖励
+    type_mock_purchase: 模拟充值
+    type_escrow_pledge: 担保质押
+    type_escrow_release: 质押退回
+    empty: 暂无流水
+    notice: 校园币仅用于平台内部演示，不可兑换现金
+  layout:
+    top: 导航栏
+    上中: 余额大卡片（金色背景 + 余额 + 充值按钮）
+    中: 收入/支出/总额三栏统计
+    main: 三段式 tab 流水列表（全部/收入/支出），每条「类型 + 金额 + 时间 + 关联单号」
+    bottom: 模拟充值提示底部小字
+  states: [normal, empty, loading]
+  prompt: |
+    Campus coin wallet.
+    Top nav "我的钱包".
+    Hero card: warm gold gradient (#fff6e6 to #f0a020 light), centered:
+    Small label "校园币余额" gray.
+    Big number "1,000 CC" gold #f0a020 bold huge.
+    Right: green pill button "充值（模拟）".
+    Below hero: 3-column inline stats: 本月收入 +120 / 本月支出 -240 / 累计交易 1850.
+    Tabs: 全部 | 收入 | 支出.
+    Transaction list:
+    - row: green coin icon + "评价奖励" left, +10 CC green right, below: 2 hours ago + 订单号
+    - row: red coin icon + "下单扣款" + -240 CC red + 昨天 15:31 + Kindle订单
+    - row: gold pledge icon + "担保质押" + -50 CC + 上周三 + 商品 #128
+    - row: green icon + "质押退回" + +50 CC + ...
+    Bottom small gray text: "校园币仅用于平台内部演示，不可兑换现金".
+
+- id: P20_wants_list
+  title: 求购列表
+  path: pages/wants/list
+  tier: V2
+  vant_components: [van-search, van-tabs, van-tab, van-card, van-tag, van-button, van-empty]
+  copy:
+    nav_title: 求购大厅
+    search_placeholder: 搜索想求购的商品
+    tab_all: 全部
+    tab_数码: 数码
+    tab_图书: 图书
+    tab_其他: 其他
+    publish_want: 我要发布求购
+    have_one: 我有
+    contact_buyer: 联系买家
+    empty: 暂无求购
+    closed_tag: 已关闭
+  layout:
+    top: 导航栏 + 搜索栏 + 分类 tabs + 右上「发布求购」按钮
+    main: 求购卡片列表
+    bottom: 浮动「发布求购」FAB
+  states: [normal, empty, loading]
+  prompt: |
+    Wants (买家发求购) market screen.
+    Top nav "求购大厅" + search "搜索想求购的商品".
+    Tabs: 全部 | 数码 | 图书 | 服饰 | 其他.
+    List of wants cards, each card:
+    - top: avatar + name + "1 小时前" + tag "数码" green outline
+    - title 1 line "求一个九成新 Kindle，预算 250 以内"
+    - description 2 lines
+    - footer: red bold "最高 ¥250" left, green outline button "我有" right
+    Floating action button bottom-right: green circle with + icon, label "发求购".
+
+- id: P21_wants_detail
+  title: 求购详情
+  path: pages/wants/detail
+  tier: V2
+  vant_components: [van-card, van-tag, van-button, van-goods-action, van-goods-action-button]
+  copy:
+    nav_title: 求购详情
+    description: 求购描述
+    max_price: 最高出价
+    category: 分类
+    posted_at: 发布时间
+    contact: 私聊买家
+    have_one: 我有这个
+    similar_matches: 平台已为你匹配
+  layout:
+    top: 导航栏
+    main: 买家卡片 + 求购描述 + 最高出价 + 平台匹配的相似商品
+    bottom: 操作栏（私聊 / 我有这个）
+  states: [open, matched, closed]
+  prompt: |
+    Want detail screen.
+    Top nav "求购详情".
+    Buyer card: avatar + name "王同学" + "经济学院 · 大二" + 学院认证 badge + small "1 小时前发布".
+    Description card title "求购描述": 4 lines text.
+    Meta row: 最高出价 ¥250 (red bold) | 分类 数码 (green tag) | 已浏览 23.
+    Section "为你匹配 3 件相似商品": horizontal scroll cards.
+    Bottom action bar: outline green "私聊买家" + filled green "我有这个".
+
+- id: P22_wants_publish
+  title: 发布求购
+  path: pages/wants/publish
+  tier: V2
+  vant_components: [van-cell-group, van-field, van-button]
+  copy:
+    nav_title: 发布求购
+    title_label: 想求什么
+    title_placeholder: 一句话描述（例：求 Kindle）
+    desc_label: 详情
+    desc_placeholder: 介绍你想要的成色、用途等
+    max_price_label: 最高预算
+    category_label: 分类
+    publish: 发布求购
+  layout:
+    top: 导航栏
+    main: 标题 / 详情 / 最高预算 / 分类
+    bottom: 发布按钮
+  states: [editing, submitting, success]
+  prompt: |
+    Publish want screen.
+    Top nav "发布求购".
+    Form: 标题 [一句话描述（例：求 Kindle）] / 详情 [textarea] /
+    最高预算 [¥ ___] / 分类 [选择分类>].
+    Bottom: green button "发布求购".
+
+- id: P23_offer_list
+  title: 议价管理
+  path: pages/offer/list
+  tier: V2
+  vant_components: [van-tabs, van-tab, van-card, van-button, van-tag, van-empty]
+  copy:
+    nav_title: 议价
+    tab_received: 我收到的
+    tab_sent: 我发出的
+    accept: 接受
+    reject: 拒绝
+    counter: 还价
+    expire_tag_3h: 3 小时后过期
+    accepted_tag: 已接受
+    rejected_tag: 已拒绝
+    withdrawn_tag: 已撤回
+    expired_tag: 已过期
+    empty: 暂无议价
+  layout:
+    top: 导航栏 + 段式 tabs
+    main: 议价卡片列表
+  states: [pending, accepted, rejected, expired, withdrawn]
+  prompt: |
+    Offers/bargaining management.
+    Top nav "议价".
+    Tabs: 我收到的 | 我发出的.
+    Offer card example:
+    - top row: 买家 avatar + name "刘同学" + small tag orange "3 小时后过期"
+    - product mini card: thumbnail + "Kindle Paperwhite 4" + 原价 ¥240
+    - offer row: large red "出价 ¥200" + 浮动差额 -40
+    - message bubble: "可以便宜点吗?"
+    - action row: ghost outline "拒绝" / ghost "还价" / filled green "接受"
+
+- id: P24_favorites_list
+  title: 收藏与关注
+  path: pages/favorites/list
+  tier: V2
+  vant_components: [van-tabs, van-tab, van-card, van-button, van-tag, van-empty]
+  copy:
+    nav_title: 收藏与关注
+    tab_goods: 商品
+    tab_sellers: 卖家
+    notify_price_drop: 降价提醒
+    notify_on: 已开启
+    notify_off: 开启
+    unfavorite: 取消收藏
+    unfollow: 取消关注
+  layout:
+    top: 导航栏 + tabs（商品 / 卖家）
+    main: 收藏商品卡片 / 关注卖家卡片
+  states: [goods_normal, goods_empty, sellers_normal, sellers_empty]
+  prompt: |
+    Favorites + Followed sellers screen.
+    Top nav "收藏与关注".
+    Tabs: 商品 (12) | 卖家 (3).
+    Goods tab active. List of product cards:
+    - thumbnail + title + price ¥240
+    - small tag if dropped: red "降价 ¥40" with arrow-down
+    - row right side: bell icon "降价提醒 已开启" green
+    - long-press hint at very bottom small gray "长按可取消收藏"
+
+- id: P25_dispute_raise
+  title: 发起争议
+  path: pages/dispute/raise
+  tier: V2
+  vant_components: [van-cell-group, van-field, van-uploader, van-button, van-tag]
+  copy:
+    nav_title: 申请售后
+    order_label: 订单
+    reason_label: 申诉原因
+    reason_placeholder: 详细描述商品问题（建议 50 字以上）
+    evidence_label: 证据图片
+    evidence_hint: 最多 6 张，含商品照片、聊天截图
+    consequence_hint: 提交后将进入争议处理，期间订单不可继续操作
+    submit: 提交申诉
+    quick_reasons:
+      - 与描述不符
+      - 商品有损坏
+      - 卖家未发货
+      - 收到假货
+      - 其他
+  layout:
+    top: 导航栏 + 订单摘要卡片
+    main: 申诉原因选择 + 详情 textarea + 证据上传
+    bottom: 后果提示 + 提交按钮
+  states: [editing, submitting]
+  prompt: |
+    Raise dispute screen.
+    Top nav "申请售后".
+    Order summary card: thumbnail + title "Kindle..." + 订单号 + status tag "已收货".
+    Section "选择原因": chip row of reasons:
+    "与描述不符 / 商品有损坏 / 卖家未发货 / 收到假货 / 其他", first selected (green).
+    Reason detail textarea placeholder "详细描述商品问题（建议 50 字以上）".
+    Photo uploader 6-grid: "上传证据".
+    Yellow warning banner: ⚠ "提交后将进入争议处理，期间订单不可继续操作".
+    Bottom green button "提交申诉".
+
+- id: P26_dispute_detail
+  title: 争议详情
+  path: pages/dispute/detail
+  tier: V2
+  vant_components: [van-steps, van-cell-group, van-cell, van-tag, van-button]
+  copy:
+    nav_title: 争议详情
+    status_pending: 等待管理员处理
+    status_resolved_buyer: 判买家胜
+    status_resolved_seller: 判卖家胜
+    status_withdrawn: 已撤回
+    initiator_label: 发起人
+    reason_label: 申诉原因
+    evidence_label: 证据
+    decision_label: 处理结果
+    decision_reason_label: 处理说明
+    withdraw: 撤回申诉
+    contact_admin: 联系客服
+  layout:
+    top: 导航栏 + 状态横条 steps（提交 → 受理 → 判决）
+    main: 申诉原因 / 证据图集 / 判决说明
+    bottom: 操作按钮（按状态变化）
+  states: [pending, resolved_for_buyer, resolved_for_seller, withdrawn]
+  prompt: |
+    Dispute detail screen, status pending.
+    Top nav "争议详情".
+    Top steps: 提交(✓) → 受理(✓ active) → 判决.
+    Status banner: orange "等待管理员处理" with small "预计 24 小时内处理".
+    Order summary card.
+    Detail card title "申诉原因":
+    Tag "与描述不符" + textarea content.
+    Photo grid 4 images "证据".
+    Bottom action row: outline gray "撤回申诉" + outline green "联系客服".
+
+- id: P27_admin_disputes
+  title: 争议管理
+  path: pages/admin/disputes
+  tier: V2
+  vant_components: [van-tabs, van-tab, van-card, van-tag, van-button, van-dialog, van-field]
+  copy:
+    nav_title: 争议管理
+    tab_pending: 待处理
+    tab_resolved: 已处理
+    decision_for_buyer: 判买家胜
+    decision_for_seller: 判卖家胜
+    decision_reason_placeholder: 处理说明（必填）
+  layout:
+    top: 导航栏 + tabs
+    main: 争议卡片列表 + 判决按钮
+  states: [pending_list, resolved_list, deciding]
+  prompt: |
+    Admin disputes list.
+    Top nav "争议管理".
+    Tabs: 待处理 (3) | 已处理 (28).
+    Dispute card:
+    - top row: 订单号 + 发起人 avatar+name + tag orange "待处理"
+    - middle: reason + thumbnail of evidence (small grid 3 images)
+    - bottom 2 buttons: outline red "判买家胜" + outline green "判卖家胜"
+
+- id: P28_admin_reports
+  title: 举报管理
+  path: pages/admin/reports
+  tier: V2
+  vant_components: [van-tabs, van-tab, van-card, van-tag, van-button]
+  copy:
+    nav_title: 举报管理
+    tab_pending: 待处理
+    tab_resolved: 已处理
+    tab_dismissed: 已驳回
+    target_user: 用户
+    target_good: 商品
+    target_message: 消息
+    handle: 处理
+    dismiss: 驳回
+  layout:
+    top: 导航栏 + tabs
+    main: 举报卡片列表 + 处理按钮
+  states: [pending, resolved, dismissed]
+  prompt: |
+    Admin reports list.
+    Top nav "举报管理".
+    Tabs: 待处理 (5) | 已处理 (32) | 已驳回 (7).
+    Report card:
+    - top: 举报人 avatar+name + 类型 tag (用户/商品/消息) + 时间
+    - middle: 被举报对象 (avatar或缩略图 + 名)
+    - reason text
+    - bottom 2 buttons: red outline "驳回" + green filled "处理"

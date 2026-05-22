@@ -1,0 +1,15 @@
+{
+  "navigationBarTitleText": "发布商品",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "van-button": "@vant/weapp/button/index",
+    "van-cell": "@vant/weapp/cell/index",
+    "van-cell-group": "@vant/weapp/cell-group/index",
+    "van-field": "@vant/weapp/field/index",
+    "van-uploader": "@vant/weapp/uploader/index",
+    "van-switch": "@vant/weapp/switch/index",
+    "van-goods-action": "@vant/weapp/goods-action/index",
+    "van-goods-action-button": "@vant/weapp/goods-action-button/index",
+    "van-toast": "@vant/weapp/toast/index"
+  }
+}

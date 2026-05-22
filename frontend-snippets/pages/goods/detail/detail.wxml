@@ -1,0 +1,222 @@
+<!--
+  商品详情 P05 — V2 视觉对齐 doc/mockups/figure/05_goods_detail_v1.png
+  结构：
+    1. 顶部图片轮播（swiper，全宽方形，右下 dots 计数）
+    2. 价格 hero 卡（红价 + 原价划线 + 状态徽章 + 标题 + 「实物认证」徽章 + 标签）
+    3. 卖家卡（头像 / 昵称 / 学院 / 信用 + 关注）
+    4. 商品描述卡（标题 + 多行文本，pre-wrap）
+    5. 商品规格 cell-group（成色 / 自提 / 发布时间 / 浏览）
+    6. 底部操作栏：收藏 / 聊一聊 / 举报 | 出价 / 立即购买
+  事件保留：onPreviewImage / onContactSeller / onPlaceOrder
+  新增事件：onToggleFavorite / onToggleFollow / onReport / onMakeOffer
+  右上「举报」入口 + verify-badge fallback 见 wxss 注释
+-->
+<view class="goods-detail" wx:if="{{ item }}">
+
+  <!-- ============ 1. 图片轮播 ============ -->
+  <view class="gallery">
+    <swiper
+      class="gallery__swiper"
+      indicator-dots="{{ false }}"
+      autoplay="{{ false }}"
+      circular="{{ true }}"
+      bindchange="onSwiperChange"
+    >
+      <block wx:if="{{ item.images && item.images.length > 0 }}">
+        <swiper-item
+          wx:for="{{ item.images }}"
+          wx:for-index="i"
+          wx:key="id"
+          data-i="{{ i }}"
+          bindtap="onPreviewImage"
+        >
+          <image class="gallery__img" src="{{ item.url }}" mode="aspectFill" />
+        </swiper-item>
+      </block>
+      <swiper-item wx:else>
+        <image
+          class="gallery__img"
+          src="{{ item.cover_url || '/images/placeholder/cover.png' }}"
+          mode="aspectFill"
+        />
+      </swiper-item>
+    </swiper>
+
+    <!-- 右下角图片计数胶囊 -->
+    <view class="gallery__counter" wx:if="{{ item.images && item.images.length > 1 }}">
+      {{ currentSlide + 1 }} / {{ item.images.length }}
+    </view>
+
+    <!-- 右上角举报入口 — 浮在图片之上 -->
+    <view class="gallery__report" bindtap="onReport">
+      <van-icon name="warning-o" size="36rpx" color="#ffffff" />
+    </view>
+  </view>
+
+  <!-- ============ 2. 价格 hero ============ -->
+  <view class="price-hero">
+    <view class="price-hero__row">
+      <view class="price-hero__price-block">
+        <text class="price-hero__currency">¥</text><text class="price-hero__amount">{{ item.price }}</text>
+        <text wx:if="{{ item.original_price }}" class="price-hero__original">¥{{ item.original_price }}</text>
+      </view>
+
+      <view class="price-hero__status">
+        <van-tag
+          wx:if="{{ item.status === 'on_sale' }}"
+          type="success"
+          plain
+          round
+          custom-class="status-tag status-tag--onsale"
+        >在售中</van-tag>
+        <van-tag
+          wx:elif="{{ item.status === 'sold_out' }}"
+          type="warning"
+          round
+          custom-class="status-tag"
+        >已售出</van-tag>
+        <van-tag
+          wx:else
+          type="default"
+          round
+          custom-class="status-tag"
+        >{{ item.status }}</van-tag>
+      </view>
+    </view>
+
+    <view class="price-hero__title">{{ item.title }}</view>
+
+    <!--
+      verify-badge 组件待 B6 创建后回填 —— 当前用 Vant van-tag fallback。
+      回填位置：下方整段 .price-hero__verify-row（含 fallback 徽章 + condition 标签）
+      可替换为：<verify-badge verified="{{ item.verified }}" certificate="{{ item.cert_url }}" />
+    -->
+    <view class="price-hero__verify-row">
+      <!-- ▼▼▼ verify-badge FALLBACK BEGIN ▼▼▼ -->
+      <view wx:if="{{ item.verified }}" class="verify-badge">
+        <van-icon name="checked" size="24rpx" color="#1aad19" />
+        <text class="verify-badge__text">实物认证</text>
+      </view>
+      <!-- ▲▲▲ verify-badge FALLBACK END ▲▲▲ -->
+
+      <view class="condition-tag" wx:if="{{ f.condStr }}">
+        <text class="condition-tag__dot"></text>
+        <text>{{ f.condStr }}</text>
+      </view>
+
+      <view class="condition-tag condition-tag--ghost" wx:if="{{ item.category_name }}">
+        <text>{{ item.category_name }}</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- ============ 3. 卖家卡 ============ -->
+  <view class="seller-card" wx:if="{{ item.seller }}">
+    <view class="seller-card__main" bindtap="onContactSeller">
+      <view class="seller-card__avatar-wrap">
+        <image
+          class="seller-card__avatar"
+          src="{{ item.seller.avatar_url || '/images/placeholder/avatar.png' }}"
+          mode="aspectFill"
+        />
+      </view>
+      <view class="seller-card__info">
+        <view class="seller-card__name-row">
+          <text class="seller-card__name">{{ item.seller.nickname || '匿名同学' }}</text>
+          <view class="seller-card__verify" wx:if="{{ item.seller.verified }}">
+            <van-icon name="checked" size="20rpx" color="#1aad19" />
+          </view>
+        </view>
+        <view class="seller-card__meta">
+          <text wx:if="{{ item.seller.college }}">{{ item.seller.college }}</text>
+          <text wx:if="{{ item.seller.college && item.seller.grade }}" class="seller-card__dot">·</text>
+          <text wx:if="{{ item.seller.grade }}">{{ item.seller.grade }}</text>
+          <text wx:if="{{ (item.seller.college || item.seller.grade) && item.seller.credit_score }}" class="seller-card__dot">·</text>
+          <text wx:if="{{ item.seller.credit_score }}">信用 {{ item.seller.credit_score }}</text>
+        </view>
+      </view>
+    </view>
+
+    <view
+      class="seller-card__follow {{ isFollowing ? 'seller-card__follow--active' : '' }}"
+      catchtap="onToggleFollow"
+    >
+      <text>{{ isFollowing ? '已关注' : '关注' }}</text>
+    </view>
+  </view>
+
+  <!-- ============ 4. 商品描述 ============ -->
+  <view class="section">
+    <view class="section__title">
+      <text class="section__title-bar"></text>
+      <text>商品描述</text>
+    </view>
+    <view class="section__desc">{{ item.description || '卖家很懒，没有写描述。' }}</view>
+  </view>
+
+  <!-- ============ 5. 商品规格 ============ -->
+  <view class="section section--spec">
+    <view class="section__title">
+      <text class="section__title-bar"></text>
+      <text>商品信息</text>
+    </view>
+    <view class="spec-list">
+      <view class="spec-row">
+        <text class="spec-row__label">成色</text>
+        <text class="spec-row__value">{{ f.condStr || '—' }}</text>
+      </view>
+      <view class="spec-row" wx:if="{{ item.category_name }}">
+        <text class="spec-row__label">分类</text>
+        <text class="spec-row__value">{{ item.category_name }}</text>
+      </view>
+      <view class="spec-row" wx:if="{{ item.pickup_location }}">
+        <text class="spec-row__label">自提</text>
+        <text class="spec-row__value">{{ item.pickup_location }}</text>
+      </view>
+      <view class="spec-row">
+        <text class="spec-row__label">发布</text>
+        <text class="spec-row__value">{{ f.relTime || '—' }}</text>
+      </view>
+      <view class="spec-row spec-row--last">
+        <text class="spec-row__label">浏览</text>
+        <text class="spec-row__value">{{ item.view_count || 0 }} 次</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 底部安全占位 -->
+  <view class="bottom-spacer"></view>
+
+  <!-- ============ 6. 底部操作栏 ============ -->
+  <view class="action-bar">
+    <view class="action-bar__icons">
+      <view class="action-bar__icon" bindtap="onToggleFavorite">
+        <van-icon
+          name="{{ isFavorite ? 'star' : 'star-o' }}"
+          size="44rpx"
+          color="{{ isFavorite ? '#ee0a24' : '#666666' }}"
+        />
+        <text class="action-bar__icon-label">{{ favoriteCount > 0 ? favoriteCount : '收藏' }}</text>
+      </view>
+      <view class="action-bar__icon" bindtap="onContactSeller">
+        <van-icon name="chat-o" size="44rpx" color="#666666" />
+        <text class="action-bar__icon-label">聊一聊</text>
+      </view>
+    </view>
+
+    <view class="action-bar__buttons">
+      <view
+        class="action-btn action-btn--ghost {{ (isMine || item.status !== 'on_sale') ? 'action-btn--disabled' : '' }}"
+        bindtap="onMakeOffer"
+      >出价</view>
+      <view
+        class="action-btn action-btn--primary {{ (isMine || item.status !== 'on_sale') ? 'action-btn--disabled' : '' }}"
+        bindtap="onPlaceOrder"
+      >{{ isMine ? '我的商品' : (item.status === 'on_sale' ? '立即购买' : '已售出') }}</view>
+    </view>
+  </view>
+</view>
+
+<!-- 加载 / 错误占位 -->
+<view class="placeholder-tip" wx:elif="{{ loading }}">加载中…</view>
+<view class="placeholder-tip" wx:else>商品不存在或已被删除</view>

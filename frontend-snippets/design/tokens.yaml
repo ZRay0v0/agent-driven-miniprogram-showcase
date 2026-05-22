@@ -1,0 +1,271 @@
+# 校园二手 — Design Tokens（设计 token 单一来源）
+#
+# 本文件是项目唯一的视觉规约来源。所有页面/组件的颜色、字号、间距、圆角、
+# 阴影、动效都从这里取，禁止在 wxss 里写死 hex / px。
+#
+# 使用方式（wxss）：
+#   color: var(--color-text-primary);
+#   padding: var(--spacing-md);
+#
+# Vant Weapp 用 CSS 变量定制主题，对应映射写在 frontend/app.wxss 顶部。
+# 真机 rpx → px：750rpx ≈ 设计稿宽（375px @2x = 750rpx）。
+
+meta:
+  version: "1.0.0"
+  updated: "2026-05-13"
+  description: 校园二手交易微信小程序设计 token，配合 Vant Weapp 使用
+  base_unit: rpx
+  design_width: 750  # 设计稿基准宽度（750rpx = 375px @2x）
+
+# ============================================================
+# 1. Colors — 颜色
+# ============================================================
+color:
+  # —— 品牌色 ——
+  brand:
+    primary: "#1aad19"        # 校园绿（WeChat 风格，与微信原生 TabBar 选中色一致）
+    primary_light: "#39c93c"  # hover / 轻量背景
+    primary_dark: "#0f7a0e"   # active / 按下态
+    primary_alpha_10: "rgba(26,173,25,0.10)"  # 选中态背景
+    primary_alpha_20: "rgba(26,173,25,0.20)"
+
+  # —— 语义色 ——
+  semantic:
+    success: "#1aad19"
+    warning: "#ff976a"
+    danger: "#ee0a24"          # 价格红、删除红
+    info: "#1989fa"            # Vant 默认蓝（保留作信息提示）
+
+  # —— 文字色（在 #f4f5f7 / #ffffff 背景上的对比度均达 WCAG AA） ——
+  text:
+    primary: "#1a1a1a"         # 主标题、价格
+    secondary: "#666666"       # 正文
+    tertiary: "#999999"        # 辅助说明
+    disabled: "#c8c9cc"        # 禁用
+    inverse: "#ffffff"         # 反白（绿色按钮上的文字）
+    link: "#1989fa"            # 链接
+
+  # —— 背景色 ——
+  bg:
+    page: "#f4f5f7"            # 页面底色
+    card: "#ffffff"            # 卡片
+    elevated: "#ffffff"        # 浮层
+    mask: "rgba(0,0,0,0.5)"    # 弹窗遮罩
+    fill_light: "#f7f8fa"      # 灰色填充（搜索栏等）
+    fill_medium: "#ebedf0"     # 分隔条
+    overlay_dark: "rgba(0,0,0,0.7)"  # 全屏图片预览背景
+
+  # —— 描边色 ——
+  border:
+    light: "#ebedf0"           # 卡片细分隔
+    default: "#dcdee0"         # 输入框
+    strong: "#969799"          # 强调描边
+
+  # —— 校园币专用 ——
+  coin:
+    gold: "#f0a020"            # 校园币金色
+    gold_light: "#fff6e6"      # 余额背景
+
+# ============================================================
+# 2. Typography — 字体
+# ============================================================
+typography:
+  family:
+    sans: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", Helvetica, "Microsoft YaHei", sans-serif
+    mono: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace
+    number: "DIN Alternate", -apple-system, sans-serif  # 价格 / 金额用更紧凑的数字字体
+
+  size:
+    xs: 20rpx     # 标签、徽章
+    sm: 24rpx     # 辅助文字、面包屑
+    md: 28rpx     # 正文（base）
+    lg: 32rpx     # 副标题、按钮文字
+    xl: 36rpx     # 区域标题
+    xxl: 44rpx    # 价格、强调
+    title: 56rpx  # 大标题（首页/钱包余额）
+
+  weight:
+    regular: 400
+    medium: 500
+    semibold: 600
+    bold: 700
+
+  line_height:
+    tight: 1.2    # 标题
+    normal: 1.5   # 正文
+    loose: 1.8    # 评论 / 详情大段文字
+
+  letter_spacing:
+    normal: 0
+    wide: 1rpx    # 全大写英文
+
+# ============================================================
+# 3. Spacing — 间距（4 倍数节奏）
+# ============================================================
+spacing:
+  none: 0
+  xs: 4rpx
+  sm: 8rpx
+  md: 16rpx     # 基本卡片内边距
+  lg: 24rpx     # 卡片间隔
+  xl: 32rpx     # 模块间隔
+  xxl: 48rpx    # 大模块间隔
+  page_h: 32rpx # 页面左右安全边距
+
+# 卡片内边距推荐
+card:
+  padding_h: 24rpx
+  padding_v: 20rpx
+  gap: 16rpx     # 卡片内字段间距
+
+# ============================================================
+# 4. Border — 描边 / 圆角
+# ============================================================
+border:
+  width:
+    thin: 1rpx
+    thick: 2rpx
+
+  radius:
+    none: 0
+    sm: 8rpx       # 标签、徽章
+    md: 16rpx      # 按钮、输入框
+    lg: 24rpx      # 卡片
+    xl: 32rpx      # 大卡片、弹窗
+    pill: 999rpx   # 胶囊（余额胶囊、价格胶囊）
+    circle: 50%    # 头像
+
+# ============================================================
+# 5. Shadow — 阴影（3 档 elevation）
+# ============================================================
+shadow:
+  none: none
+  sm: "0 2rpx 8rpx rgba(0,0,0,0.04)"      # 浮起的卡片
+  md: "0 4rpx 16rpx rgba(0,0,0,0.06)"     # 标准卡片
+  lg: "0 8rpx 32rpx rgba(0,0,0,0.12)"     # 弹窗 / Drawer
+  inset: "inset 0 2rpx 4rpx rgba(0,0,0,0.04)"  # 输入框聚焦反向阴影
+
+# ============================================================
+# 6. Motion — 动效
+# ============================================================
+motion:
+  duration:
+    instant: 0ms
+    fast: 150ms       # 按钮点击反馈
+    base: 200ms       # 切换 tab
+    slow: 300ms       # 弹窗、抽屉
+    slowest: 500ms    # 全屏过渡
+
+  easing:
+    linear: linear
+    ease_in: cubic-bezier(0.4, 0, 1, 1)
+    ease_out: cubic-bezier(0, 0, 0.2, 1)        # 大多数 UI 转场
+    ease_in_out: cubic-bezier(0.4, 0, 0.2, 1)
+    spring: cubic-bezier(0.34, 1.56, 0.64, 1)   # 校园币入账 / 点赞反馈
+
+# ============================================================
+# 7. Z-index — 层级
+# ============================================================
+z_index:
+  base: 0
+  card: 1
+  sticky: 10        # 吸顶搜索栏
+  tabbar: 100
+  dropdown: 500
+  modal: 1000
+  toast: 2000
+
+# ============================================================
+# 8. Component-specific — 常用组件预设
+# ============================================================
+component:
+  # 按钮
+  button:
+    height_sm: 56rpx
+    height_md: 80rpx
+    height_lg: 88rpx
+    padding_h: 32rpx
+    font_size: 28rpx
+    radius: 16rpx
+
+  # 输入框
+  input:
+    height: 88rpx
+    padding_h: 24rpx
+    font_size: 28rpx
+    radius: 16rpx
+
+  # 触控热区（WCAG 推荐 ≥ 88rpx）
+  touchable:
+    min_size: 88rpx
+
+  # TabBar
+  tabbar:
+    height: 100rpx
+    icon_size: 44rpx
+    label_size: 20rpx
+
+  # 卡片
+  card:
+    radius: 24rpx
+    padding: 24rpx
+
+  # 头像
+  avatar:
+    sm: 56rpx
+    md: 80rpx
+    lg: 120rpx
+    xl: 160rpx
+
+  # 价格胶囊
+  price:
+    font_size: 36rpx
+    color: "#ee0a24"
+    weight: 600
+
+  # 校园币胶囊
+  coin_badge:
+    bg: "#fff6e6"
+    color: "#f0a020"
+    radius: 999rpx
+    padding_h: 16rpx
+    padding_v: 6rpx
+
+# ============================================================
+# 9. Page-level layout — 页面通用布局
+# ============================================================
+layout:
+  page_padding_h: 32rpx          # 左右边距
+  page_padding_v: 24rpx
+  module_gap: 32rpx              # 模块间距
+  status_bar_estimate: 88rpx     # iOS 状态栏估算（保险用 wx.getSystemInfo）
+  navbar_height: 88rpx
+  tabbar_height: 100rpx
+  safe_area_bottom: env(safe-area-inset-bottom)  # iPhone X+
+
+# ============================================================
+# 10. Vant Weapp CSS 变量映射（写到 app.wxss）
+# ============================================================
+vant_overrides:
+  description: |
+    Vant 通过 CSS 变量做主题定制。下面的键写到 frontend/app.wxss 的 page {} 块里，
+    覆盖 Vant 默认蓝 (#1989fa) 为校园绿 (#1aad19)。
+  vars:
+    "--button-primary-background-color": "#1aad19"
+    "--button-primary-border-color": "#1aad19"
+    "--tab-active-text-color": "#1aad19"
+    "--tabs-bottom-bar-color": "#1aad19"
+    "--tabbar-item-active-color": "#1aad19"
+    "--search-background-color": "#f4f5f7"
+    "--rate-icon-full-color": "#1aad19"
+    "--tag-success-color": "#1aad19"
+    "--switch-on-background-color": "#1aad19"
+    "--checkbox-checked-icon-color": "#1aad19"
+    "--radio-checked-icon-color": "#1aad19"
+    "--stepper-button-icon-color": "#1aad19"
+    "--card-price-color": "#ee0a24"
+    "--field-input-text-color": "#1a1a1a"
+    "--cell-text-color": "#1a1a1a"
+    "--cell-value-color": "#666666"
+    "--border-color": "#ebedf0"
+    "--background-color": "#f4f5f7"

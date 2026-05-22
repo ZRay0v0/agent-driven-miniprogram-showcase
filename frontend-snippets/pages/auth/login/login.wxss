@@ -1,0 +1,113 @@
+/* 登录页 P01_login — 全部使用 var(--xxx) tokens，禁止写死 hex / px
+   视觉目标：doc/mockups/figure/01_login_v1.png
+   - 顶部 40% 留白
+   - 中央品牌大字（绿）+ 副标题（灰）
+   - 底部全宽绿色按钮 + 协议提示 */
+
+.login-page {
+  min-height: 100vh;
+  padding: 0 var(--spacing-xxl);
+  padding-bottom: calc(var(--spacing-xxl) + env(safe-area-inset-bottom));
+  background: var(--color-bg-card);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* ---------- 顶部留白（约屏幕 30%，配合 hero 后形成 40% 顶部区） ---------- */
+.login-spacer-top {
+  height: 30vh;
+}
+
+/* ---------- 中央品牌区 ---------- */
+.login-hero {
+  text-align: center;
+}
+
+.login-title {
+  font-size: var(--font-size-title); /* 56rpx */
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.2;
+  letter-spacing: 4rpx;
+}
+
+.login-subtitle {
+  margin-top: var(--spacing-lg);
+  font-size: var(--font-size-md);
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+}
+
+/* ---------- 中部弹性留白 ---------- */
+.login-spacer-flex {
+  flex: 1;
+  min-height: 80rpx;
+}
+
+/* ---------- 底部操作区 ---------- */
+.login-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+/* van-button 通过 custom-class 注入 */
+.login-btn {
+  height: 96rpx !important;
+  font-size: var(--font-size-lg) !important;
+  font-weight: 600 !important;
+}
+
+.login-btn-secondary {
+  margin-top: var(--spacing-lg);
+  color: var(--color-text-secondary) !important;
+  border-color: var(--color-border-default) !important;
+}
+
+/* ---------- 协议提示 ---------- */
+.login-privacy {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  line-height: 1.5;
+}
+
+.login-privacy-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+}
+
+/* ---------- 次要入口：仅浏览 ---------- */
+.login-browse {
+  margin-top: var(--spacing-lg);
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  padding: var(--spacing-sm) 0;
+}
+
+/* ---------- 已登录态 ---------- */
+.login-welcome {
+  text-align: center;
+  font-size: var(--font-size-lg);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-lg);
+}
+
+.login-welcome-name {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.login-warn {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md) var(--spacing-lg);
+  background: var(--color-primary-alpha-10);
+  color: var(--color-danger);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  line-height: 1.5;
+}

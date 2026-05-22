@@ -1,0 +1,90 @@
+<view class="index-page">
+  <!-- 吸顶头：搜索栏 + 漏斗筛选 + 分类 chips + 排序 tabs -->
+  <view class="index-header">
+    <!-- 搜索栏（带右侧漏斗 icon） -->
+    <view class="search-row">
+      <view class="search-flex">
+        <van-search
+          value="{{ keyword }}"
+          placeholder="搜索想要的商品"
+          shape="round"
+          background="transparent"
+          bind:change="onSearchChange"
+          bind:search="onSearchConfirm"
+          bind:clear="onSearchClear"
+        />
+      </view>
+      <view class="filter-btn" hover-class="filter-btn-hover" bindtap="onFilterTap">
+        <van-icon name="filter-o" size="22px" color="var(--color-text-secondary)" />
+      </view>
+    </view>
+
+    <!-- 分类横向滚动 chips -->
+    <scroll-view
+      scroll-x
+      enhanced
+      show-scrollbar="{{ false }}"
+      class="category-scroll"
+      wx:if="{{ categories.length }}"
+    >
+      <view class="category-track">
+        <view
+          wx:for="{{ categories }}"
+          wx:key="id"
+          class="category-chip {{ item.id === activeCategoryId ? 'is-active' : '' }}"
+          data-id="{{ item.id }}"
+          bindtap="onCategoryChange"
+        >
+          <text class="category-chip-text">{{ item.name }}</text>
+          <view class="category-chip-underline"></view>
+        </view>
+      </view>
+    </scroll-view>
+
+    <!-- 排序 tabs：综合 / 最新 / 价格 -->
+    <van-tabs
+      active="{{ sortActiveIndex }}"
+      color="var(--color-primary)"
+      line-width="32rpx"
+      line-height="4rpx"
+      title-active-color="var(--color-text-primary)"
+      title-inactive-color="var(--color-text-secondary)"
+      background="var(--color-bg-card)"
+      bind:change="onSortChange"
+    >
+      <van-tab
+        wx:for="{{ sortTabs }}"
+        wx:key="key"
+        title="{{ item.label }}"
+      />
+    </van-tabs>
+  </view>
+
+  <!-- 商品双列瀑布流 -->
+  <view class="goods-grid" wx:if="{{ list.length }}">
+    <view class="goods-col">
+      <block wx:for="{{ list }}" wx:for-index="i" wx:key="id">
+        <goods-card wx:if="{{ i % 2 === 0 }}" item="{{ item }}" />
+      </block>
+    </view>
+    <view class="goods-col">
+      <block wx:for="{{ list }}" wx:for-index="i" wx:key="id">
+        <goods-card wx:if="{{ i % 2 === 1 }}" item="{{ item }}" />
+      </block>
+    </view>
+  </view>
+
+  <!-- 空态 -->
+  <empty-state
+    wx:if="{{ !loading && list.length === 0 }}"
+    icon="🛍️"
+    title="还没有商品"
+    desc="去发布你的第一件闲置吧"
+    actionText="立即发布"
+    bind:action="onPublishTap"
+  />
+
+  <!-- 加载更多状态 -->
+  <view class="load-tip" wx:if="{{ loading && list.length }}">加载中…</view>
+  <view class="load-tip" wx:elif="{{ !hasMore && list.length }}">— 已经到底了 —</view>
+</view>

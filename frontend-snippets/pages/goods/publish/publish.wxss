@@ -1,0 +1,154 @@
+/* ============================================================
+ * 发布商品 V2 — 基于 Vant Weapp + design tokens
+ * 全部颜色 / 圆角 / 字号走 var(--xxx)，不写死
+ * ============================================================ */
+
+.page {
+  min-height: 100vh;
+  background: var(--color-bg-page);
+  padding-bottom: var(--spacing-xxl);
+}
+
+/* ============================================================
+ * 1. 上传卡片
+ * ============================================================ */
+.uploader-card {
+  margin: var(--spacing-md) var(--spacing-md) 0;
+  padding: var(--spacing-lg);
+  background: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.uploader-hint {
+  margin-top: var(--spacing-md);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+/* 上传组件内部美化：第一个 + cell 走虚线 */
+.uploader-card .van-uploader__upload {
+  background-color: var(--color-bg-fill-light) !important;
+  border: 2rpx dashed var(--color-border-default) !important;
+  border-radius: var(--radius-md) !important;
+}
+.uploader-card .van-uploader__upload-text {
+  color: var(--color-text-secondary) !important;
+  font-size: var(--font-size-sm) !important;
+}
+.uploader-card .van-uploader__preview-image {
+  border-radius: var(--radius-md) !important;
+}
+
+/* ============================================================
+ * 2. 表单分组
+ * ============================================================ */
+.form-group {
+  margin: var(--spacing-md) var(--spacing-md) 0 !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+
+/* van-cell-group inset 的圆角覆盖（防止部分版本不够圆） */
+.form-group.van-cell-group--inset {
+  border-radius: var(--radius-lg) !important;
+}
+
+/* 单元格标题/值的颜色 */
+.cell-value {
+  color: var(--color-text-primary) !important;
+}
+.cell-value-link {
+  color: var(--color-text-secondary) !important;
+}
+
+/* ============================================================
+ * 3. AI 迷你按钮（标题 / 详情 field 右侧 button slot）
+ * ============================================================ */
+.ai-mini-btn {
+  height: 48rpx !important;
+  padding: 0 var(--spacing-md) !important;
+  font-size: var(--font-size-xs) !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-pill) !important;
+  line-height: 1 !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  background: var(--color-primary-alpha-10) !important;
+}
+
+/* ============================================================
+ * 4. 担保 / 认证组
+ * ============================================================ */
+.switch-group {
+  padding: 0;
+}
+
+/* 行标题 + 校园币胶囊 */
+.row-title {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+.row-title-text {
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+/* 校园币胶囊（50 CC） */
+.coin-tag {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2rpx;
+  padding: 4rpx var(--spacing-md);
+  background: var(--color-coin-light);
+  color: var(--color-coin);
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+}
+.coin-amount {
+  font-size: var(--font-size-sm);
+  line-height: 1;
+}
+.coin-unit {
+  font-size: var(--font-size-xs);
+  margin-left: var(--spacing-xs);
+}
+
+/* 担保质押下方小字 */
+.row-hint {
+  padding: 0 var(--spacing-xl) var(--spacing-md);
+  margin-top: calc(-1 * var(--spacing-sm));
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  background: var(--color-bg-card);
+}
+
+/* ============================================================
+ * 5. 底部固定栏占位
+ * ============================================================ */
+.footer-placeholder {
+  height: 140rpx;
+}
+
+/* ============================================================
+ * 6. 底部 van-goods-action 按钮样式
+ * ============================================================ */
+.action-btn-draft {
+  background: var(--color-bg-card) !important;
+  color: var(--color-primary) !important;
+  border: 2rpx solid var(--color-primary) !important;
+  border-radius: var(--radius-pill) !important;
+  font-weight: 500 !important;
+}
+
+.action-btn-publish {
+  background: var(--color-primary) !important;
+  color: var(--color-text-inverse) !important;
+  border-radius: var(--radius-pill) !important;
+  font-weight: 600 !important;
+}

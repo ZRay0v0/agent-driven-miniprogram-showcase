@@ -1,0 +1,191 @@
+<!-- 发布商品 V2 — 基于 Vant Weapp + design tokens -->
+<view class="page">
+
+  <!-- ============================================================
+       1. 9 宫格图片上传
+       ============================================================ -->
+  <view class="uploader-card">
+    <van-uploader
+      file-list="{{ uploaderFiles }}"
+      max-count="9"
+      multiple
+      bind:after-read="onUploaderAfterRead"
+      bind:delete="onUploaderDelete"
+      upload-text="添加图片"
+      accept="image"
+      preview-size="200rpx"
+    />
+    <view class="uploader-hint">最多 9 张，建议横版实拍</view>
+  </view>
+
+  <!-- ============================================================
+       2. 主表单（标题 / 详情 / 价格 / 分类 / 成色 / 自提）
+       ============================================================ -->
+  <van-cell-group inset custom-class="form-group">
+
+    <!-- 标题 + AI 按钮 -->
+    <van-field
+      label="标题"
+      value="{{ title }}"
+      placeholder="一句话概括（建议 15-30 字）"
+      maxlength="64"
+      border="{{ true }}"
+      bind:change="onTitleInput"
+      input-align="left"
+    >
+      <view slot="button">
+        <van-button
+          size="mini"
+          type="primary"
+          plain
+          loading="{{ aiOptimizing }}"
+          bind:click="onAITitleOptimize"
+          custom-class="ai-mini-btn"
+        >
+          {{ aiOptimizing ? 'AI…' : '✨ AI' }}
+        </van-button>
+      </view>
+    </van-field>
+
+    <!-- 详情 + AI 按钮 -->
+    <van-field
+      label="详情"
+      value="{{ description }}"
+      type="textarea"
+      placeholder="介绍商品的成色、购买时间、瑕疵"
+      maxlength="2000"
+      autosize="{{ descAutosize }}"
+      border="{{ true }}"
+      bind:change="onDescInput"
+    >
+      <view slot="button">
+        <van-button
+          size="mini"
+          type="primary"
+          plain
+          loading="{{ aiGenerating }}"
+          bind:click="onAIDescGenerate"
+          custom-class="ai-mini-btn"
+        >
+          {{ aiGenerating ? 'AI…' : '✨ AI' }}
+        </van-button>
+      </view>
+    </van-field>
+
+    <!-- 价格 -->
+    <van-field
+      label="价格"
+      value="{{ price }}"
+      type="digit"
+      placeholder="¥ 期望成交价"
+      border="{{ true }}"
+      bind:change="onPriceInput"
+    />
+
+    <!-- 分类 -->
+    <picker
+      mode="selector"
+      range="{{ categories }}"
+      range-key="name"
+      value="{{ categoryIndex }}"
+      bindchange="onCategoryChange"
+    >
+      <van-cell
+        title="分类"
+        value="{{ categories.length ? categories[categoryIndex].name : '选择分类' }}"
+        is-link
+        border="{{ true }}"
+        value-class="cell-value"
+      />
+    </picker>
+
+    <!-- 成色 -->
+    <picker
+      mode="selector"
+      range="{{ conditionOptions }}"
+      range-key="label"
+      value="{{ conditionIndex }}"
+      bindchange="onConditionChange"
+    >
+      <van-cell
+        title="成色"
+        value="{{ conditionOptions[conditionIndex].label }}"
+        is-link
+        border="{{ true }}"
+        value-class="cell-value"
+      />
+    </picker>
+
+    <!-- 自提 -->
+    <van-field
+      label="自提"
+      value="{{ remark }}"
+      placeholder="如：西区 3 栋宿舍楼下"
+      maxlength="128"
+      border="{{ false }}"
+      bind:change="onRemarkInput"
+    />
+  </van-cell-group>
+
+  <!-- ============================================================
+       3. 担保 / 认证 卡片
+       ============================================================ -->
+  <van-cell-group inset custom-class="form-group switch-group">
+
+    <!-- 担保质押 -->
+    <van-cell border="{{ true }}" center>
+      <view slot="title" class="row-title">
+        <text class="row-title-text">担保质押</text>
+        <view class="coin-tag">
+          <text class="coin-amount">50</text>
+          <text class="coin-unit">CC</text>
+        </view>
+      </view>
+      <view slot="right-icon">
+        <van-switch
+          checked="{{ pledgeEnabled }}"
+          size="40rpx"
+          bind:change="onPledgeChange"
+        />
+      </view>
+    </van-cell>
+    <view class="row-hint">上架时质押 50 校园币，争议责任在你时会扣</view>
+
+    <!-- 实物认证 -->
+    <van-cell
+      title="实物认证"
+      value="上传认证照"
+      is-link
+      border="{{ false }}"
+      value-class="cell-value-link"
+      bind:click="onOpenVerify"
+    />
+  </van-cell-group>
+
+  <!-- 占位，避免被底部固定栏挡住 -->
+  <view class="footer-placeholder"></view>
+
+  <!-- ============================================================
+       4. 底部 fixed bar
+       ============================================================ -->
+  <van-goods-action safe-area-inset-bottom>
+    <van-goods-action-button
+      text="保存草稿"
+      type="warning"
+      plain
+      bind:click="onSaveDraft"
+      loading="{{ savingDraft }}"
+      custom-class="action-btn-draft"
+    />
+    <van-goods-action-button
+      text="立即发布"
+      type="primary"
+      bind:click="onSubmit"
+      loading="{{ submitting }}"
+      disabled="{{ submitting }}"
+      custom-class="action-btn-publish"
+    />
+  </van-goods-action>
+
+  <van-toast id="van-toast" />
+</view>

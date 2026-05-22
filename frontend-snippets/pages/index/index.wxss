@@ -1,0 +1,119 @@
+/* ============================================================
+ * 首页 — 瀑布流 + 搜索 + 分类 + 排序
+ * 视觉对齐：doc/mockups/figure/03_index_v1.png
+ * 设计 token：frontend/design/tokens.yaml
+ * 所有颜色/字号/间距/圆角/阴影通过 var(--xxx) 取值
+ * ============================================================ */
+
+.index-page {
+  min-height: 100vh;
+  background: var(--color-bg-page);
+  padding-bottom: var(--spacing-xxl);
+}
+
+/* ---------- 吸顶头（搜索 + 分类 + 排序） ---------- */
+.index-header {
+  position: sticky;
+  top: 0;
+  z-index: 10; /* tokens.yaml z_index.sticky */
+  background: var(--color-bg-card);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ---------- 搜索栏 + 漏斗 ---------- */
+.search-row {
+  display: flex;
+  align-items: center;
+  padding-right: var(--spacing-md);
+  background: var(--color-bg-card);
+}
+
+.search-flex {
+  flex: 1;
+  min-width: 0;
+}
+
+.filter-btn {
+  flex-shrink: 0;
+  width: 72rpx;
+  height: 72rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  margin-left: var(--spacing-xs);
+}
+
+.filter-btn-hover {
+  background: var(--color-bg-fill-light);
+}
+
+/* ---------- 分类 chips（横向滚动，绿色下划线表示 active） ---------- */
+.category-scroll {
+  width: 100%;
+  white-space: nowrap;
+  background: var(--color-bg-card);
+}
+
+.category-track {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 0 var(--spacing-lg);
+  gap: var(--spacing-xl);
+}
+
+.category-chip {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--spacing-md) 0 var(--spacing-sm);
+}
+
+.category-chip-text {
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  line-height: 1.2;
+  transition: color 150ms ease-out;
+}
+
+.category-chip-underline {
+  margin-top: var(--spacing-sm);
+  width: 32rpx;
+  height: 4rpx;
+  border-radius: 2rpx;
+  background: transparent;
+  transition: background 150ms ease-out;
+}
+
+.category-chip.is-active .category-chip-text {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+
+.category-chip.is-active .category-chip-underline {
+  background: var(--color-primary);
+}
+
+/* ---------- 商品双列瀑布流 ---------- */
+.goods-grid {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+}
+
+.goods-col {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* ---------- 加载提示 ---------- */
+.load-tip {
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  padding: var(--spacing-xl) 0;
+}

@@ -1,0 +1,180 @@
+<!--
+  我的商品 — 卖家管理已发布商品
+  视觉目标：doc/mockups/figure/07_goods_manage_v1.png
+  结构：
+    1) 顶部 van-tabs（在售 / 已售出 / 下架 / 草稿）— 标题带计数
+    2) 加载态：van-skeleton 占位 3 条
+    3) 空态：empty-state，引导去发布
+    4) 列表：横向卡片（缩略图 + 标题 + 价格 + 浏览/收藏 + 右侧操作堆）
+    5) 长按某条 → van-action-sheet（删除 / 推广 / 取消）
+-->
+<view class="page">
+
+  <!-- ============ 顶部 Tabs ============ -->
+  <view class="tabs-wrap">
+    <van-tabs
+      active="{{ activeTab }}"
+      color="#1aad19"
+      title-active-color="#1aad19"
+      title-inactive-color="#666666"
+      line-width="48rpx"
+      line-height="6rpx"
+      bind:change="onTabChange"
+      sticky="{{ false }}"
+      ellipsis="{{ false }}"
+      swipe-threshold="4"
+    >
+      <van-tab
+        wx:for="{{ tabs }}"
+        wx:key="key"
+        title="{{ item.label }} ({{ counts[item.key] || 0 }})"
+        name="{{ item.key }}"
+      />
+    </van-tabs>
+  </view>
+
+  <!-- ============ 主体 ============ -->
+  <view class="body">
+
+    <!-- 加载态：3 条骨架卡 -->
+    <block wx:if="{{ loading && !list.length }}">
+      <view class="card skeleton-card" wx:for="{{ [1,2,3] }}" wx:key="*this">
+        <view class="skeleton skeleton-cover"></view>
+        <view class="skeleton-body">
+          <view class="skeleton skeleton-line skeleton-line--lg"></view>
+          <view class="skeleton skeleton-line skeleton-line--md"></view>
+          <view class="skeleton skeleton-line skeleton-line--sm"></view>
+        </view>
+      </view>
+    </block>
+
+    <!-- 空态 -->
+    <block wx:elif="{{ !list.length }}">
+      <empty-state
+        icon="📦"
+        title="{{ emptyTitle }}"
+        desc="{{ emptyDesc }}"
+        actionText="{{ activeTab === 'on_sale' || activeTab === 'draft' ? '去发布商品' : '' }}"
+        bind:action="onTapPublish"
+      />
+    </block>
+
+    <!-- 列表 -->
+    <block wx:else>
+      <view
+        wx:for="{{ list }}"
+        wx:key="id"
+        class="card item"
+        hover-class="item--hover"
+        hover-stay-time="80"
+        data-id="{{ item.id }}"
+        data-index="{{ index }}"
+        bindtap="onTapItem"
+        bindlongpress="onLongPressItem"
+      >
+        <!-- 缩略图 -->
+        <view class="item__cover">
+          <image
+            class="item__img"
+            src="{{ item.cover_url || '/images/placeholder/cover.png' }}"
+            mode="aspectFill"
+            lazy-load
+          />
+          <!-- 售出 / 下架 状态角标 -->
+          <view wx:if="{{ activeTab === 'sold' }}" class="item__badge item__badge--sold">已售出</view>
+          <view wx:elif="{{ activeTab === 'off_shelf' }}" class="item__badge item__badge--off">已下架</view>
+          <view wx:elif="{{ activeTab === 'draft' }}" class="item__badge item__badge--draft">草稿</view>
+        </view>
+
+        <!-- 中部信息 -->
+        <view class="item__body">
+          <view class="item__title text-ellipsis-2">{{ item.title || '未命名商品' }}</view>
+          <view class="item__price">{{ item._priceStr }}</view>
+          <view class="item__stats">
+            <text class="item__stat">浏览 {{ item.view_count || 0 }}</text>
+            <text class="item__stat-sep">·</text>
+            <text class="item__stat">收藏 {{ item.favorite_count || 0 }}</text>
+          </view>
+        </view>
+
+        <!-- 右侧操作堆 -->
+        <view class="item__actions" catchtap="noop">
+          <!-- 在售：编辑 + 下架 -->
+          <block wx:if="{{ activeTab === 'on_sale' }}">
+            <view
+              class="act-btn act-btn--ghost"
+              data-id="{{ item.id }}"
+              catchtap="onTapEdit"
+              hover-class="act-btn--hover"
+            >编辑</view>
+            <view
+              class="act-btn act-btn--ghost-danger"
+              data-id="{{ item.id }}"
+              catchtap="onTapTakeOff"
+              hover-class="act-btn--hover"
+            >下架</view>
+          </block>
+
+          <!-- 下架：编辑 + 重新上架 -->
+          <block wx:elif="{{ activeTab === 'off_shelf' }}">
+            <view
+              class="act-btn act-btn--ghost"
+              data-id="{{ item.id }}"
+              catchtap="onTapEdit"
+              hover-class="act-btn--hover"
+            >编辑</view>
+            <view
+              class="act-btn act-btn--primary"
+              data-id="{{ item.id }}"
+              catchtap="onTapRelist"
+              hover-class="act-btn--hover"
+            >重新上架</view>
+          </block>
+
+          <!-- 草稿：编辑 + 删除 -->
+          <block wx:elif="{{ activeTab === 'draft' }}">
+            <view
+              class="act-btn act-btn--primary"
+              data-id="{{ item.id }}"
+              catchtap="onTapEdit"
+              hover-class="act-btn--hover"
+            >继续编辑</view>
+            <view
+              class="act-btn act-btn--ghost-danger"
+              data-id="{{ item.id }}"
+              catchtap="onTapDelete"
+              hover-class="act-btn--hover"
+            >删除</view>
+          </block>
+
+          <!-- 已售出：仅一个查看订单 -->
+          <block wx:elif="{{ activeTab === 'sold' }}">
+            <view
+              class="act-btn act-btn--ghost"
+              data-id="{{ item.id }}"
+              catchtap="onTapViewOrder"
+              hover-class="act-btn--hover"
+            >查看订单</view>
+          </block>
+        </view>
+      </view>
+
+      <!-- 列表尾占位 -->
+      <view class="footer-spacer"></view>
+    </block>
+  </view>
+
+  <!-- ============ Action Sheet（长按） ============ -->
+  <van-action-sheet
+    show="{{ sheetVisible }}"
+    actions="{{ sheetActions }}"
+    cancel-text="取消"
+    close-on-click-action
+    bind:select="onSheetSelect"
+    bind:cancel="onSheetCancel"
+    bind:close="onSheetCancel"
+  />
+
+  <van-toast id="van-toast" />
+  <van-dialog id="van-dialog" />
+</view>
